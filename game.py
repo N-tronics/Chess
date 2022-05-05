@@ -28,15 +28,15 @@ class Square:
         return f"<S {self.color} at {self.pos}>"
 
 
-class ChessBoard:
+class ChessEngine:
     def __init__(self):
+        # This array is the internal representation of a chess board
         self.board: np.ndarry = np.empty((8, 8), dtype=Square)
-        print(self.board)
         for i in range(8):
             for j in range(8):
                 self.board[i, j] = Square(Vec2(i, j), Piece.WTE if (i + j) % 2 == 0 else Piece.BLK)
-        print(self.board)
 
+        # Keeps track of piece position according to color to avoid a board search
         self.piece_positions: Dict[str, List[Vec2]] = {
             Piece.WTE: [],
             Piece.BLK: []
@@ -58,14 +58,19 @@ class ChessBoard:
         for i, row in enumerate(fields[0].split("/")):
             j = 0
             while j < len(row):
+                # Remove pieces at empty squares
                 if row[j].isnumeric():
                     for j in range(j, j + int(row[j])):
                         self.board[j, i].piece = None
+                # Place a pieces
                 else:
                     color = Piece.WTE if row[j].isupper() else Piece.BLK
                     self.piece_positions[color].append(Vec2(j, i))
                     self.board[j, i].piece = Piece(Vec2(j, i), color, row[j].lower())
                     j += 1
+
+        # Turn
+        self.turn = Piece.WTE if fields[1] == "w" else Piece.BLK
 
     @staticmethod
     def valid_coords(coords: Vec2) -> bool:
@@ -79,9 +84,10 @@ class ChessBoard:
     def select(self, coords: Vec2 | None) -> None:
         """
         Selects a square
-        :param coords: Vec2(grid X coordinate, grid Y coordinate) | None for deselecting
+        :param coords: Vec2(grid X coordinate, grid Y coordinate) | None to deselect
         :return: None
         """
+        # If a square was previously selected, deselect it
         if self.selected_square is not None:
             self.selected_square.piece.selected = False
 
@@ -99,7 +105,7 @@ class ChessBoard:
         """
         sqr_clicked: Square = self.board[pos.x, pos.y]
         # TODO: Valid moves takes precedence over reselection
-        if not sqr_clicked.has_piece():
-            self.select(None)
-        else:
+        if sqr_clicked.has_piece():
             self.select(pos)
+        else:
+            self.select(None)

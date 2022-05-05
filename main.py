@@ -9,8 +9,6 @@ from pieces import *
 from vector import *
 from typing import *
 
-pieces: List[str] = ['king', 'queen', 'rook', 'bishop', 'knight', 'pawn']
-
 
 class Chess:
     def __init__(self):
@@ -28,7 +26,7 @@ class Chess:
         self.grid_offset = Vec2(21, 8)
         self.cell_size = Vec2(71.5, 71)
         self.grid_dimens = self.cell_size * Vec2(8, 8)
-        self.board = game.ChessBoard()
+        self.board = game.ChessEngine()
 
         # Loading and scale images
         self.board_img = pygame.transform.scale(
