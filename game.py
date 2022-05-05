@@ -3,7 +3,7 @@
 
 from pieces import *
 
-power_pieces: List[PieceType] = [Piece.ROK, Piece.KNT, Piece.BSP, Piece.QEN, Piece.KNG, Piece.BSP, Piece.KNT, Piece.ROK]
+power_pieces: List[PieceType] = [Piece.ROOK, Piece.KNIGHT, Piece.BISHOP, Piece.QUEEN, Piece.KING, Piece.BISHOP, Piece.KNIGHT, Piece.ROOK]
 start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 
 
@@ -13,8 +13,8 @@ class Square:
         self.color = color
         self.piece: Piece | None = None
         self.attacks: Dict[PieceColor, int] = {
-            Piece.WTE: 0,
-            Piece.BLK: 0
+            Piece.WHITE: 0,
+            Piece.BLACK: 0
         }
 
     def has_piece(self) -> bool:
@@ -34,14 +34,14 @@ class ChessEngine:
         self.board: np.ndarry = np.empty((8, 8), dtype=Square)
         for i in range(8):
             for j in range(8):
-                self.board[i, j] = Square(Vec2(i, j), Piece.WTE if (i + j) % 2 == 0 else Piece.BLK)
+                self.board[i, j] = Square(Vec2(i, j), Piece.WHITE if (i + j) % 2 == 0 else Piece.BLACK)
 
         # Keeps track of piece position according to color to avoid a board search
         self.piece_positions: Dict[str, List[Vec2]] = {
-            Piece.WTE: [],
-            Piece.BLK: []
+            Piece.WHITE: [],
+            Piece.BLACK: []
         }
-        self.turn: PieceColor = Piece.WTE
+        self.turn: PieceColor = Piece.WHITE
         self.selected_square: Square | None = None
 
         self.load_fen(start_fen)
@@ -64,13 +64,13 @@ class ChessEngine:
                         self.board[j, i].piece = None
                 # Place a pieces
                 else:
-                    color = Piece.WTE if row[j].isupper() else Piece.BLK
+                    color = Piece.WHITE if row[j].isupper() else Piece.BLACK
                     self.piece_positions[color].append(Vec2(j, i))
-                    self.board[j, i].piece = Piece(Vec2(j, i), color, row[j].lower())
+                    self.board[j, i].piece = create_piece(row[j].lower())(Vec2(j, i), color)
                     j += 1
 
         # Turn
-        self.turn = Piece.WTE if fields[1] == "w" else Piece.BLK
+        self.turn = Piece.WHITE if fields[1] == "w" else Piece.BLACK
 
     @staticmethod
     def valid_coords(coords: Vec2) -> bool:

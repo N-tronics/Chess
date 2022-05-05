@@ -34,14 +34,14 @@ class Chess:
             self.WIN_DIMENS.get_tuple()
         )
         self.piece_imgs: Dict[PieceColor, Dict[PieceType, pygame.Surface]] = {
-            Piece.WTE: {piece_type: pygame.transform.scale(
+            Piece.WHITE: {piece_type: pygame.transform.scale(
                 pygame.image.load(os.path.join(os.getcwd(), "images", f"w{Piece.get_name(piece_type)}.png")),
                 self.cell_size.get_tuple()
-            ) for piece_type in set(game.power_pieces + [Piece.PWN])},
-            Piece.BLK: {piece_type: pygame.transform.scale(
+            ) for piece_type in set(game.power_pieces + [Piece.PAWN])},
+            Piece.BLACK: {piece_type: pygame.transform.scale(
                 pygame.image.load(os.path.join(os.getcwd(), "images", f"b{Piece.get_name(piece_type)}.png")),
                 self.cell_size.get_tuple()
-            ) for piece_type in set(game.power_pieces + [Piece.PWN])}
+            ) for piece_type in set(game.power_pieces + [Piece.PAWN])}
         }
 
     def window_coords_to_grid_coords(self, w_coords: Vec2) -> Vec2 | None:
