@@ -2,30 +2,12 @@
 # Nischay Bharadwaj (N-tronics)
 
 from pieces import *
+from square import Square
 
-power_pieces: List[PieceType] = [Piece.ROOK, Piece.KNIGHT, Piece.BISHOP, Piece.QUEEN, Piece.KING, Piece.BISHOP, Piece.KNIGHT, Piece.ROOK]
+power_pieces: List[Piece.Type] = [
+    Piece.ROOK, Piece.KNIGHT, Piece.BISHOP, Piece.QUEEN, Piece.KING, Piece.BISHOP, Piece.KNIGHT, Piece.ROOK
+]
 start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
-
-class Square:
-    def __init__(self, pos: Vec2, color: PieceColor):
-        self.pos = pos
-        self.color = color
-        self.piece: Piece | None = None
-        self.attacks: Dict[PieceColor, int] = {
-            Piece.WHITE: 0,
-            Piece.BLACK: 0
-        }
-
-    def has_piece(self) -> bool:
-        """
-        Checks whether the square has a piece
-        :return:
-        """
-        return self.piece is not None
-
-    def __repr__(self):
-        return f"<S {self.color} at {self.pos}>"
 
 
 class ChessEngine:
@@ -41,7 +23,7 @@ class ChessEngine:
             Piece.WHITE: [],
             Piece.BLACK: []
         }
-        self.turn: PieceColor = Piece.WHITE
+        self.turn: Piece.Color = Piece.WHITE
         self.selected_square: Square | None = None
 
         self.load_fen(start_fen)

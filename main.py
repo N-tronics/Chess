@@ -5,7 +5,8 @@ import pygame
 import os
 import game
 from sys import exit as sys_exit
-from pieces import *
+from pieces import BasePiece
+from game_constants import Piece
 from vector import *
 from typing import *
 
@@ -33,13 +34,13 @@ class Chess:
             pygame.image.load(os.path.join(os.getcwd(), "images", "chess-board.png")),
             self.WIN_DIMENS.get_tuple()
         )
-        self.piece_imgs: Dict[PieceColor, Dict[PieceType, pygame.Surface]] = {
+        self.piece_imgs: Dict[Piece.Color, Dict[Piece.Type, pygame.Surface]] = {
             Piece.WHITE: {piece_type: pygame.transform.scale(
-                pygame.image.load(os.path.join(os.getcwd(), "images", f"w{Piece.get_name(piece_type)}.png")),
+                pygame.image.load(os.path.join(os.getcwd(), "images", f"w{BasePiece.get_name(piece_type)}.png")),
                 self.cell_size.get_tuple()
             ) for piece_type in set(game.power_pieces + [Piece.PAWN])},
             Piece.BLACK: {piece_type: pygame.transform.scale(
-                pygame.image.load(os.path.join(os.getcwd(), "images", f"b{Piece.get_name(piece_type)}.png")),
+                pygame.image.load(os.path.join(os.getcwd(), "images", f"b{BasePiece.get_name(piece_type)}.png")),
                 self.cell_size.get_tuple()
             ) for piece_type in set(game.power_pieces + [Piece.PAWN])}
         }
@@ -102,7 +103,7 @@ class Chess:
 
         for _, piece_positions in self.board.piece_positions.items():
             for g_coords in piece_positions:
-                piece: Piece = self.board.board[g_coords.x, g_coords.y].piece
+                piece: BasePiece = self.board.board[g_coords.x, g_coords.y].piece
                 coords: Vec2 = self.grid_coords_to_window_coords(piece.pos)
                 self.WIN.blit(self.piece_imgs[piece.color][piece.type], coords.get_tuple())
 

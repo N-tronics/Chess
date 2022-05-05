@@ -2,64 +2,30 @@
 # Nischay Bharadwaj (N-tronics)
 
 import numpy as np
+from game_constants import Piece, dir_offsets
+from square import Square
 from typing import *
 from vector import *
 
-PieceColor = str
-PieceType = str
 
-offsets: Dict[str, List[Vec2]] = {
-    "cross": [
-        Vec2(0, -1),  # Up
-        Vec2(0, 1),  # Down
-        Vec2(1, 0),  # Right
-        Vec2(-1, 0)  # Left
-    ],
-    "diagonal": [
-        Vec2(-1, -1),  # Up left
-        Vec2(1, -1),  # Up right
-        Vec2(1, 1),  # Down right
-        Vec2(-1, 1)  # Down left
-    ],
-    "knight": [
-        Vec2(-2, -1), Vec2(-1, -2),
-        Vec2(1, -2), Vec2(2, -1),
-        Vec2(2, 1), Vec2(1, 2),
-        Vec2(-1, 2), Vec2(-2, 1)
-    ]
-}
-
-
-class Piece:
-    WHITE = "w"
-    BLACK = "b"
-    KING = "k"
-    QUEEN = "q"
-    ROOK = "r"
-    BISHOP = "b"
-    KNIGHT = "n"
-    PAWN = "p"
-
+class BasePiece:
     @staticmethod
-    def compute_raw_moves(piece, board: np.ndarray, offset: List[Vec2], depth: int) -> List[Vec2]:
-        moves: List[Vec2] = []
-        for ofst in offset:
+    def compute_raw_moves(pos: Vec2, offsets: List[Vec2], depth: int) -> Iterator[Vec2]:
+        """
+        Generates a list of valid squares that a piece can move to
+        :param pos: Current position of piece
+        :param offsets: List of offsets
+        :param depth: Number of times to check in each offset
+        :return: Generator of a move
+        """
+        for ofst in offsets:
             for i in range(depth):
-                sqr = piece.pos + ofst * i
-                if sqr.x < 0 or sqr.x > 7 or sqr.y < 0 or sqr.y > 7:
-                    break
-                p = board[sqr.x, sqr.y]
-                if p == 0:
-                    moves.append(sqr)
-                elif p.color != piece.color:
-                    moves.append(sqr)
-                    break
-                else:
-                    break
-        return moves
+                sqr = pos + ofst * i
+                if 0 <= sqr.x <= 7 and 0 <= sqr.y <= 7:
+                    yield sqr
 
     @staticmethod
-    def get_name(type_: PieceType) -> str:
+    def get_name(type_: Piece.Type) -> str:
         if type_ == Piece.KING:
             return "king"
         elif type_ == Piece.QUEEN:
@@ -73,7 +39,7 @@ class Piece:
         elif type_ == Piece.PAWN:
             return "pawn"
 
-    def __init__(self, pos: Vec2, color: PieceColor, type_: PieceType):
+    def __init__(self, pos: Vec2, color: Piece.Color, type_: Piece.Type):
         self.pos = pos
         self.color = color
         self.type = type_
@@ -85,40 +51,51 @@ class Piece:
         return self.color == Piece.WHITE
 
     def __repr__(self):
-        return f"<P {'White' if self.is_white() else 'Black'} {Piece.get_name(self.type)} at {self.pos}>"
+        return f"<P {'White' if self.is_white() else 'Black'} {BasePiece.get_name(self.type)} at {self.pos}>"
 
 
-class King(Piece):
-    def __init__(self, pos: Vec2, color: PieceColor):
+class King(BasePiece):
+    def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.KING)
 
+    def compute_valid_moves(self, board: np.ndarray) -> None:
+        """
+        Computes valid moves for a King
+        :param board: Current board array
+        :return: None
+        """
+        for sqr_coords in BasePiece.compute_raw_moves(self.pos, dir_offsets["cross"], 1):
+            sqr: Square = board[sqr_coords.x, sqr_coords.y]
+            if sqr.has_piece():
+                pass
 
-class Queen(Piece):
-    def __init__(self, pos: Vec2, color: PieceColor):
+
+class Queen(BasePiece):
+    def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.QUEEN)
 
 
-class Rook(Piece):
-    def __init__(self, pos: Vec2, color: PieceColor):
+class Rook(BasePiece):
+    def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.ROOK)
 
 
-class Bishop(Piece):
-    def __init__(self, pos: Vec2, color: PieceColor):
+class Bishop(BasePiece):
+    def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.BISHOP)
 
 
-class Knight(Piece):
-    def __init__(self, pos: Vec2, color: PieceColor):
+class Knight(BasePiece):
+    def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.KNIGHT)
 
 
-class Pawn(Piece):
-    def __init__(self, pos: Vec2, color: PieceColor):
+class Pawn(BasePiece):
+    def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.PAWN)
 
 
-def create_piece(type_: PieceType) -> Type:
+def create_piece(type_: Piece.Type) -> Type:
     """
     Returns a piece class according to the type
     :param type_: Type of the piece
