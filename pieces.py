@@ -10,7 +10,7 @@ from vector import *
 
 class BasePiece:
     @staticmethod
-    def compute_raw_moves(pos: Vec2, offsets: List[Vec2], depth: int) -> Iterator[Vec2]:
+    def generate_raw_moves(pos: Vec2, offsets: List[Vec2], depth: int = 8) -> Generator[Vec2, bool, None]:
         """
         Generates a list of valid squares that a piece can move to
         :param pos: Current position of piece
@@ -19,10 +19,11 @@ class BasePiece:
         :return: Generator of a move
         """
         for ofst in offsets:
-            for i in range(depth):
-                sqr = pos + ofst * i
-                if 0 <= sqr.x <= 7 and 0 <= sqr.y <= 7:
-                    yield sqr
+            for i in range(1, depth + 1):
+                sqr_coords = pos + ofst * i
+                if 0 <= sqr_coords.x <= 7 and 0 <= sqr_coords.y <= 7:
+                    if (yield sqr_coords):
+                        return
 
     @staticmethod
     def get_name(type_: Piece.Type) -> str:
@@ -44,8 +45,27 @@ class BasePiece:
         self.color = color
         self.type = type_
 
-        self.selected = False
+        self.selected: bool = False
+        self.stop_iteration: bool = False
         self.valid_moves: List[Vec2] = []
+
+    def compute_raw_moves(self, offsets: List[Vec2], depth: int) -> Generator[Vec2, None, None]:
+        """
+        Wrapper around BasePiece.generate_raw_moves
+        :param offsets: List of offsets
+        :param depth: Number of times to check in each offset
+        :return:
+        """
+        raw_moves_gen = BasePiece.generate_raw_moves(self.pos, offsets, depth)
+        try:
+            next_sqr_coords = next(raw_moves_gen)
+            while next_sqr_coords:
+                yield next_sqr_coords
+                next_sqr_coords = raw_moves_gen.send(self.stop_iteration)
+        except StopIteration:
+            pass
+
+        self.stop_iteration = False
 
     def is_white(self):
         return self.color == Piece.WHITE
@@ -64,35 +84,70 @@ class King(BasePiece):
         :param board: Current board array
         :return: None
         """
-        for sqr_coords in BasePiece.compute_raw_moves(self.pos, dir_offsets["cross"], 1):
-            sqr: Square = board[sqr_coords.x, sqr_coords.y]
-            if sqr.has_piece():
-                pass
+        self.valid_moves.clear()
+        for sqr_coords in self.compute_raw_moves(dir_offsets["cross"], 1):
+            self.valid_moves.append(sqr_coords)
+            print(sqr_coords)
 
 
 class Queen(BasePiece):
     def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.QUEEN)
 
+    def compute_valid_moves(self, board: np.ndarray) -> None:
+        """
+        Computes valid moves for a Queen
+        :param board: Current board array
+        :return: None
+        """
+
 
 class Rook(BasePiece):
     def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.ROOK)
+
+    def compute_valid_moves(self, board: np.ndarray) -> None:
+        """
+        Computes valid moves for a Rook
+        :param board: Current board array
+        :return: None
+        """
 
 
 class Bishop(BasePiece):
     def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.BISHOP)
 
+    def compute_valid_moves(self, board: np.ndarray) -> None:
+        """
+        Computes valid moves for a Bishop
+        :param board: Current board array
+        :return: None
+        """
+
 
 class Knight(BasePiece):
     def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.KNIGHT)
 
+    def compute_valid_moves(self, board: np.ndarray) -> None:
+        """
+        Computes valid moves for a Knight
+        :param board: Current board array
+        :return: None
+        """
+
 
 class Pawn(BasePiece):
     def __init__(self, pos: Vec2, color: Piece.Color):
         super().__init__(pos, color, Piece.PAWN)
+
+    def compute_valid_moves(self, board: np.ndarray) -> None:
+        """
+        Computes valid moves for a Pawn
+        :param board: Current board array
+        :return: None
+        """
 
 
 def create_piece(type_: Piece.Type) -> Type:

@@ -6,7 +6,7 @@ import os
 import game
 from sys import exit as sys_exit
 from pieces import BasePiece
-from game_constants import Piece
+from game_constants import Piece, PColors
 from vector import *
 from typing import *
 
@@ -97,9 +97,16 @@ class Chess:
         #     )
 
         if self.board.selected_square is not None:
-            sel_sqr = pygame.Surface(self.cell_size.get_tuple(), pygame.SRCALPHA)
-            sel_sqr.fill((255, 65, 0, 127))
-            self.WIN.blit(sel_sqr, self.grid_coords_to_window_coords(self.board.selected_square.pos).get_tuple())
+            # Draw orange highlight on selected piece
+            pygame.draw.rect(self.WIN, PColors.ORANGE_HL, (
+                *self.grid_coords_to_window_coords(self.board.selected_square.pos).get_tuple(),
+                *self.cell_size.get_tuple()
+            ))
+            # Draw red highlight on valid moves
+            for move in self.board.selected_square.piece.valid_moves:
+                pygame.draw.rect(self.WIN, PColors.RED_HL, (
+                    *self.grid_coords_to_window_coords(move).get_tuple(), *self.cell_size.get_tuple()
+                ))
 
         for _, piece_positions in self.board.piece_positions.items():
             for g_coords in piece_positions:

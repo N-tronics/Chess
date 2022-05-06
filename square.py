@@ -24,5 +24,12 @@ class Square:
         """
         return self.piece is not None
 
+    def square_color(self) -> Piece.Color:
+        """
+        Returns the color of the square
+        :return: Color
+        """
+        return Piece.WHITE if (self.pos.x + self.pos.y) % 2 == 0 else Piece.BLACK
+
     def __repr__(self):
         return f"<S {self.color} at {self.pos}>"

@@ -63,6 +63,10 @@ class ChessEngine:
         """
         return 0 <= coords.x <= 7 and 0 <= coords.y <= 7
 
+    @staticmethod
+    def get_square_color(coords: Vec2) -> Piece.Color:
+        return Piece.WHITE if (coords.x + coords.y) % 2 == 0 else Piece.BLACK
+
     def select(self, coords: Vec2 | None) -> None:
         """
         Selects a square
@@ -78,6 +82,7 @@ class ChessEngine:
         else:
             self.selected_square = self.board[coords.x, coords.y]
             self.selected_square.piece.selected = True
+            self.selected_square.piece.compute_valid_moves(self.board)
 
     def handle_click(self, pos: Vec2) -> None:
         """

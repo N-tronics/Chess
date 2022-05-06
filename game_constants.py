@@ -21,6 +21,16 @@ class Piece:
     PAWN = "p"
 
 
+@dataclass
+class PColors:
+    RED = (255, 0, 0)
+    WHITE = (255, 255, 255)
+    BLACK = (0, 0, 0)
+
+    ORANGE_HL = (246, 156, 110)
+    RED_HL = (248, 109, 92)
+
+
 dir_offsets: Dict[str, List[Vec2]] = {
     "cross": [
         Vec2(0, -1),  # Up
