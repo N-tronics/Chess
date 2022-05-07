@@ -74,6 +74,7 @@ if __name__ == "__main__":
     print("p: PAWN\n")
     print("left click: WHITE")
     print("right click: BLACK")
-    print("middle click: DELETE\n")
+    print("middle click: delete piece")
+    print("return: generate FEN\n")
     feng = FENGenerator()
     feng.start()
