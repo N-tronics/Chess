@@ -86,8 +86,12 @@ class King(BasePiece):
         """
         self.valid_moves.clear()
         for sqr_coords in self.compute_raw_moves(dir_offsets["cross"], 1):
-            self.valid_moves.append(sqr_coords)
-            print(sqr_coords)
+            sqr: Square = board[sqr_coords.x, sqr_coords.y]
+            if sqr.has_piece():
+                if sqr.piece.color != self.color:
+                    self.valid_moves.append(sqr_coords)
+            else:
+                self.valid_moves.append(sqr_coords)
 
 
 class Queen(BasePiece):

@@ -8,10 +8,11 @@ power_pieces: List[Piece.Type] = [
     Piece.ROOK, Piece.KNIGHT, Piece.BISHOP, Piece.QUEEN, Piece.KING, Piece.BISHOP, Piece.KNIGHT, Piece.ROOK
 ]
 start_fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+empty_fen = "8/8/8/8/8/8/8/8 w KQkq - 0 1"
 
 
 class ChessEngine:
-    def __init__(self):
+    def __init__(self, load_start_fen: bool = True):
         # This array is the internal representation of a chess board
         self.board: np.ndarry = np.empty((8, 8), dtype=Square)
         for i in range(8):
@@ -26,7 +27,11 @@ class ChessEngine:
         self.turn: Piece.Color = Piece.WHITE
         self.selected_square: Square | None = None
 
-        self.load_fen(start_fen)
+        if load_start_fen:
+            self.load_fen(start_fen)
+
+    def clear_board(self):
+        self.load_fen(empty_fen)
 
     def load_fen(self, fen: str) -> None:
         """
@@ -35,6 +40,8 @@ class ChessEngine:
         :return: None
         """
         fields = fen.split()
+        self.piece_positions[Piece.WHITE].clear()
+        self.piece_positions[Piece.BLACK].clear()
 
         # Piece Position
         for i, row in enumerate(fields[0].split("/")):
@@ -48,11 +55,41 @@ class ChessEngine:
                 else:
                     color = Piece.WHITE if row[j].isupper() else Piece.BLACK
                     self.piece_positions[color].append(Vec2(j, i))
-                    self.board[j, i].piece = create_piece(row[j].lower())(Vec2(j, i), color)
+                    self.place_piece(Vec2(j, i), row[j].lower(), color)
                     j += 1
 
         # Turn
         self.turn = Piece.WHITE if fields[1] == "w" else Piece.BLACK
+
+    def generate_fen(self):
+        fen = ""
+        # Pieces
+        for i in range(8):
+            empty = 0
+            for j in range(8):
+                sqr = self.board[j, i]
+                if sqr.has_piece():
+                    if empty > 0:
+                        fen += str(empty)
+                        empty = 0
+                    fen += sqr.piece.type.upper() if sqr.piece.color == Piece.WHITE else sqr.piece.type.lower()
+                else:
+                    empty += 1
+            if empty > 0:
+                fen += str(empty)
+            if i != 7:
+                fen += "/"
+        fen += " "
+        # Turn
+        fen += self.turn + " "
+
+        fen += "KQkq - 0 1"
+
+        return fen
+
+    def place_piece(self, pos: Vec2, type_: str, color: str) -> None:
+        self.board[pos.x, pos.y].piece = create_piece(type_)(Vec2(pos.x, pos.y), color)
+        self.piece_positions[color].append(pos)
 
     @staticmethod
     def valid_coords(coords: Vec2) -> bool:
