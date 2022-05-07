@@ -65,5 +65,15 @@ class FENGenerator:
 
 
 if __name__ == "__main__":
+    print("KEY MAP:")
+    print("k: KING")
+    print("q: QUEEN")
+    print("r: ROOK")
+    print("b: BISHOP")
+    print("n: KNIGHT")
+    print("p: PAWN\n")
+    print("left click: WHITE")
+    print("right click: BLACK")
+    print("middle click: DELETE\n")
     feng = FENGenerator()
     feng.start()

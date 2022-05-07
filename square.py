@@ -3,7 +3,6 @@
 
 from typing import *
 from vector import *
-from pieces import BasePiece
 from game_constants import Piece
 
 
@@ -11,7 +10,7 @@ class Square:
     def __init__(self, pos: Vec2, color: Piece.Color):
         self.pos = pos
         self.color = color
-        self.piece: BasePiece | None = None
+        self.piece = None
         self.attacks: Dict[Piece.Color, int] = {
             Piece.WHITE: 0,
             Piece.BLACK: 0
