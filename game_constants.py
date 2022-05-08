@@ -20,6 +20,10 @@ class Piece:
     KNIGHT = "n"
     PAWN = "p"
 
+    @staticmethod
+    def opposite_color(color: Color) -> Color:
+        return Piece.WHITE if color == Piece.BLACK else Piece.BLACK
+
 
 @dataclass
 class PColors:

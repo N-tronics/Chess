@@ -20,15 +20,16 @@ class ChessEngine:
                 self.board[i, j] = Square(Vec2(i, j), Piece.WHITE if (i + j) % 2 == 0 else Piece.BLACK)
 
         # Keeps track of piece position according to color to avoid a board search
-        self.piece_positions: Dict[str, List[Vec2]] = {
-            Piece.WHITE: [],
-            Piece.BLACK: []
+        self.piece_positions: Dict[str, Set[Vec2]] = {
+            Piece.WHITE: set([]),
+            Piece.BLACK: set([])
         }
         self.turn: Piece.Color = Piece.WHITE
         self.selected_square: Square | None = None
 
         if load_start_fen:
             self.load_fen(start_fen)
+        self.load_fen("8/2npp3/1Qb5/5B2/8/4q3/2PP1N2/8 w KQkq - 0 1")
 
     def clear_board(self):
         self.load_fen(empty_fen)
@@ -46,16 +47,15 @@ class ChessEngine:
         # Piece Position
         for i, row in enumerate(fields[0].split("/")):
             j = 0
-            while j < len(row):
-                # Remove pieces at empty squares
-                if row[j].isnumeric():
-                    for j in range(j, j + int(row[j])):
-                        self.board[j, i].piece = None
-                # Place a pieces
+            for k in row:
+                if k.isnumeric():
+                    for _ in range(j, j + int(k)):
+                        self.board[_, i].piece = None
+                    j += int(k)
                 else:
-                    color = Piece.WHITE if row[j].isupper() else Piece.BLACK
-                    self.piece_positions[color].append(Vec2(j, i))
-                    self.place_piece(Vec2(j, i), row[j].lower(), color)
+                    color = Piece.WHITE if k.isupper() else Piece.BLACK
+                    self.piece_positions[color].add(Vec2(j, i))
+                    self.place_piece(Vec2(j, i), k.lower(), color)
                     j += 1
 
         # Turn
@@ -89,7 +89,19 @@ class ChessEngine:
 
     def place_piece(self, pos: Vec2, type_: str, color: str) -> None:
         self.board[pos.x, pos.y].piece = create_piece(type_)(Vec2(pos.x, pos.y), color)
-        self.piece_positions[color].append(pos)
+        self.piece_positions[Piece.opposite_color(color)].discard(pos)
+        self.piece_positions[color].add(pos)
+
+    def remove_piece(self, pos: Vec2) -> None:
+        """
+        Removes a piece from the board
+        :param pos: Vec2 containing the coords of the piece to remove
+        :return: None
+        """
+        sqr: Square = self.board[pos.x, pos.y]
+        if sqr.has_piece():
+            self.piece_positions[sqr.piece.color].discard(pos)
+            sqr.piece = None
 
     @staticmethod
     def valid_coords(coords: Vec2) -> bool:

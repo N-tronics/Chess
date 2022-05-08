@@ -49,21 +49,22 @@ class BasePiece:
         self.stop_iteration: bool = False
         self.valid_moves: List[Vec2] = []
 
-    def compute_raw_moves(self, offsets: List[Vec2], depth: int) -> Generator[Vec2, None, None]:
+    def compute_raw_moves(self, offsets: List[List[Vec2]], depth: int = 8) -> Generator[Vec2, None, None]:
         """
         Wrapper around BasePiece.generate_raw_moves
         :param offsets: List of offsets
         :param depth: Number of times to check in each offset
         :return:
         """
-        raw_moves_gen = BasePiece.generate_raw_moves(self.pos, offsets, depth)
-        try:
-            next_sqr_coords = next(raw_moves_gen)
-            while next_sqr_coords:
-                yield next_sqr_coords
-                next_sqr_coords = raw_moves_gen.send(self.stop_iteration)
-        except StopIteration:
-            pass
+        for ofst in offsets:
+            raw_moves_gen = BasePiece.generate_raw_moves(self.pos, ofst, depth)
+            try:
+                next_sqr_coords = next(raw_moves_gen)
+                while next_sqr_coords:
+                    yield next_sqr_coords
+                    next_sqr_coords = raw_moves_gen.send(self.stop_iteration)
+            except StopIteration:
+                pass
 
         self.stop_iteration = False
 
@@ -85,7 +86,7 @@ class King(BasePiece):
         :return: None
         """
         self.valid_moves.clear()
-        for sqr_coords in self.compute_raw_moves(dir_offsets["cross"], 1):
+        for sqr_coords in self.compute_raw_moves([dir_offsets["cross"], dir_offsets["diagonal"]], 1):
             sqr: Square = board[sqr_coords.x, sqr_coords.y]
             if sqr.has_piece():
                 if sqr.piece.color != self.color:
@@ -104,6 +105,12 @@ class Queen(BasePiece):
         :param board: Current board array
         :return: None
         """
+        self.valid_moves.clear()
+        for sqr_coords in self.compute_raw_moves([dir_offsets["cross"], dir_offsets["diagonal"]]):
+            sqr: Square = board[sqr_coords.x, sqr_coords.y]
+            self.valid_moves.append(sqr_coords)
+            if sqr.has_piece() and sqr.piece.color == self.color:
+                self.stop_iteration = True
 
 
 class Rook(BasePiece):

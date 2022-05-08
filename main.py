@@ -5,6 +5,7 @@ import pygame
 import os
 import game
 from sys import exit as sys_exit
+from square import Square
 from pieces import BasePiece
 from game_constants import Piece, PColors
 from vector import *
@@ -108,11 +109,14 @@ class Chess:
                     *self.grid_coords_to_window_coords(move).get_tuple(), *self.cell_size.get_tuple()
                 ))
 
-        for _, piece_positions in self.board.piece_positions.items():
+        for piece_positions in self.board.piece_positions.values():
             for g_coords in piece_positions:
-                piece: BasePiece = self.board.board[g_coords.x, g_coords.y].piece
-                coords: Vec2 = self.grid_coords_to_window_coords(piece.pos)
-                self.WIN.blit(self.piece_imgs[piece.color][piece.type], coords.get_tuple())
+                sqr: Square = self.board.board[g_coords.x, g_coords.y]
+                if sqr.has_piece():
+                    coords: Vec2 = self.grid_coords_to_window_coords(sqr.piece.pos)
+                    self.WIN.blit(self.piece_imgs[sqr.piece.color][sqr.piece.type], coords.get_tuple())
+                else:
+                    raise Exception(f"Invalid {g_coords} in piece position set")
 
         pygame.display.update()
 

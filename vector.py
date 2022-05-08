@@ -18,6 +18,9 @@ class Vec2:
     def __mul__(self, mul):
         return Vec2(self.x * mul.x, self.y * mul.y) if isinstance(mul, Vec2) else Vec2(self.x * mul, self.y * mul)
 
+    def __hash__(self):
+        return hash((self.x, self.y))
+
     def __eq__(self, vec):
         if not isinstance(vec, Vec2):
             raise ValueError(f"{vec} not a Vec2")

@@ -5,7 +5,6 @@ import pygame
 import game
 from main import Chess
 from sys import exit as sys_exit
-from square import Square
 from game_constants import Piece
 from vector import *
 from typing import *
@@ -14,6 +13,7 @@ from typing import *
 class FENGenerator:
     def __init__(self):
         self.chess = Chess()
+        pygame.display.set_caption("FEN Generator")
         self.board = self.chess.board
         self.board.load_fen(game.empty_fen)
         self.piece_type = Piece.KING
@@ -31,17 +31,11 @@ class FENGenerator:
                     if g_coords:
                         self.chess.update_screen = True
                         if pressed[0]:
-                            print(f'placing white {self.piece_type} on {g_coords}')
                             self.board.place_piece(g_coords, self.piece_type, Piece.WHITE)
                         elif pressed[2]:
-                            print(f'placing black {self.piece_type} on {g_coords}')
                             self.board.place_piece(g_coords, self.piece_type, Piece.BLACK)
                         elif pressed[1] and self.board.board[g_coords.x, g_coords.y].has_piece():
-                            sqr: Square = self.board.board[g_coords.x, g_coords.y]
-                            if sqr.has_piece():
-                                # noinspection PyUnresolvedReferences
-                                self.board.piece_positions[sqr.piece.color].remove(g_coords)
-                                sqr.piece = None
+                            self.board.remove_piece(g_coords)
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_k:
                         self.piece_type = Piece.KING
